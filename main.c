@@ -1,3 +1,4 @@
+#include <avr/interrupt.h>
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -14,28 +15,46 @@ const uint8_t digitTable[10] = {
     0b01101111  // 9
 };
 
-// Cyfry do wyświetlenia (np. "1234")
-uint8_t digits[4] = {0b0001, 0b0010, 0b0100, 0b1000};
+// Digit control pins (adjust based on your wiring)
+#define DIGIT1_EN (1 << PB0)
+#define DIGIT2_EN (1 << PB1)
+#define DIGIT3_EN (1 << PB2)
+#define DIGIT4_EN (1 << PB3)
+
+// Array to hold the digits to display
+uint8_t displayDigits[4] = {1, 2, 3, 4}; // Start with 1, 2, 3, 4
+volatile uint8_t currentDigit = 0;
+
+void display_digit(uint8_t digit, uint8_t value) {
+  PORTB = ~digit; // Turn ON the specified digit (assuming common cathode)
+  PORTD = ~digitTable[value % 10];
+  _delay_ms(1);
+}
+
+ISR(TIMER1_COMPA_vect) { currentDigit = (currentDigit + 1) % 10; }
+
+void timer1_init() {
+  TCCR1B |= (1 << WGM12); // Tryb CTC
+  OCR1A = 15624;          // Przerwanie co 1 sekundę (dla 8 MHz, prescaler 1024)
+  TIMSK |= (1 << OCIE1A); // Włącz przerwanie Timer1 CTC
+  TCCR1B |= (1 << CS12) | (1 << CS10); // Prescaler 1024
+}
 
 int main(void) {
-  DDRB = 0x0F; // PB0-PB3 jako wyjścia (sterowanie cyframi)
-  DDRD = 0xFF; // PD0-PD7 jako wyjścia (segmenty A-G + DP)
-               //
+  DDRB = 0x0F;  // PB0-PB3 as outputs (digit enable)
+  DDRD = 0xFF;  // PD0-PD7 as outputs (segment control)
+  PORTB = 0xFF; // Initially disable all digits
+  timer1_init();
+  sei();
+
+  uint8_t counter = 0;
 
   while (1) {
-    for (uint8_t i = 0; i < 9; i++) {
-      PORTB = ~digits[0];                // Ustaw cyfrę
-      PORTD = ~digitTable[i % 10];       // Ustaw segmenty dla cyfry
-      _delay_ms(1);                      // Szybsze przełączanie
-      PORTB = ~digits[1];                // Ustaw cyfrę
-      PORTD = ~digitTable[(i + 1) % 10]; // Ustaw segmenty dla cyfry
-      _delay_ms(1);                      // Szybsze przełączanie
-      PORTB = ~digits[2];                // Ustaw cyfrę
-      PORTD = ~digitTable[(i + 2) % 10]; // Ustaw segmenty dla cyfry
-      _delay_ms(1);                      // Szybsze przełączanie
-      PORTB = ~digits[3];                // Ustaw cyfrę
-      PORTD = ~digitTable[(i + 3) % 10]; // Ustaw segmenty dla cyfry
-      _delay_ms(1000);
-    }
+    PORTB = 0x0F; // PB0-PB3 as outputs (digit enable)
+    _delay_ms(1);
+    display_digit(DIGIT1_EN, currentDigit);
+    display_digit(DIGIT2_EN, (currentDigit + 1) % 10);
+    display_digit(DIGIT3_EN, (currentDigit + 2) % 10);
+    display_digit(DIGIT4_EN, (currentDigit + 3) % 10);
   }
 }
