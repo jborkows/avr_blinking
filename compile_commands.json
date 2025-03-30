@@ -1,0 +1,17 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/avr-gcc",
+      "-c",
+      "-mmcu=atmega32",
+      "-DF_CPU=16000000UL",
+      "-Os",
+      "-o",
+      "main.elf",
+      "main.c"
+    ],
+    "directory": "/home/jborkows/projects/blinking_avr",
+    "file": "/home/jborkows/projects/blinking_avr/main.c",
+    "output": "/home/jborkows/projects/blinking_avr/main.elf"
+  }
+]

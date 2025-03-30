@@ -23,19 +23,19 @@ int main(void) {
                //
 
   while (1) {
-    for (uint8_t i = 0; i < 4; i++) {
-      PORTD = ~digitTable[digits[i]]; // Ustaw segmenty dla cyfry
-      PORTB = digits[i];              // Włącz tylko jedną cyfrę
-      _delay_ms(1);                   // Szybsze przełączanie
-
-      // Debug: Zmień cyfry co 1 sekundę
-      if (i == 3) {
-        _delay_ms(1000);
-        digits[0] = (digits[0] + 1) % 10;
-        digits[1] = (digits[1] + 1) % 10;
-        digits[2] = (digits[2] + 1) % 10;
-        digits[3] = (digits[3] + 1) % 10;
-      }
+    for (uint8_t i = 0; i < 9; i++) {
+      PORTB = ~digits[0];                // Ustaw cyfrę
+      PORTD = ~digitTable[i % 10];       // Ustaw segmenty dla cyfry
+      _delay_ms(1);                      // Szybsze przełączanie
+      PORTB = ~digits[1];                // Ustaw cyfrę
+      PORTD = ~digitTable[(i + 1) % 10]; // Ustaw segmenty dla cyfry
+      _delay_ms(1);                      // Szybsze przełączanie
+      PORTB = ~digits[2];                // Ustaw cyfrę
+      PORTD = ~digitTable[(i + 2) % 10]; // Ustaw segmenty dla cyfry
+      _delay_ms(1);                      // Szybsze przełączanie
+      PORTB = ~digits[3];                // Ustaw cyfrę
+      PORTD = ~digitTable[(i + 3) % 10]; // Ustaw segmenty dla cyfry
+      _delay_ms(1000);
     }
   }
 }
