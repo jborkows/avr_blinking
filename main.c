@@ -49,7 +49,7 @@ int main(void) {
   DDRD = 0xFF;  // PD0-PD7 as outputs (segment control)
   PORTB = 0xFF; // Initially disable all digits
   timer1_init();
-  sei();
+  sei(); // Enable global interrupts
 
   uint8_t counter = 0;
 
